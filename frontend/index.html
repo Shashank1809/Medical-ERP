@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Medical ERP — Login</title>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body class="login-body">
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-icon">&#9829;</div>
+            <h1>MedERP</h1>
+            <p>Medical Service Management</p>
+        </div>
+        <form id="loginForm" onsubmit="doLogin(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Enter username" required/>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password" required/>
+            </div>
+            <div id="loginError" class="error-msg" style="display:none"></div>
+            <button type="submit" class="btn-primary btn-full" id="loginBtn">Sign In</button>
+        </form>
+    </div>
+</div>
+<script>
+    if (localStorage.getItem('erp_token')) window.location.href = 'dashboard.html';
+
+    async function doLogin(e) {
+        e.preventDefault();
+        const btn = document.getElementById('loginBtn');
+        const err = document.getElementById('loginError');
+        btn.textContent = 'Signing in...'; btn.disabled = true;
+        err.style.display = 'none';
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Login failed');
+            localStorage.setItem('erp_token', data.token);
+            localStorage.setItem('erp_user', JSON.stringify({username: data.username, fullName: data.fullName, role: data.role}));
+            window.location.href = 'dashboard.html';
+        } catch(ex) {
+            err.textContent = ex.message; err.style.display = 'block';
+            btn.textContent = 'Sign In'; btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

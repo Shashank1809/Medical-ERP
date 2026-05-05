@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Medical ERP — Dashboard</title>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body class="app-body">
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="logo-icon-sm">&#9829;</div>
+                <span class="logo-text">MedERP</span>
+            </div>
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div>
+                    <div class="admin-name" id="adminName">Admin</div>
+                    <div class="admin-role">System Administrator</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+                <span class="nav-icon">&#9632;</span> Dashboard
+            </a>
+            <a class="nav-item" data-page="customers" onclick="navigate('customers')">
+                <span class="nav-icon">&#128100;</span> Customer Master
+            </a>
+            <a class="nav-item" data-page="services" onclick="navigate('services')">
+                <span class="nav-icon">&#128295;</span> Customer Services
+            </a>
+            <a class="nav-item" data-page="products" onclick="navigate('products')">
+                <span class="nav-icon">&#128230;</span> Product Stock
+            </a>
+            <a class="nav-item" data-page="salary" onclick="navigate('salary')">
+                <span class="nav-icon">&#128181;</span> Salary Wages
+            </a>
+            <a class="nav-item" data-page="categories" onclick="navigate('categories')">
+                <span class="nav-icon">&#128200;</span> Product Category
+            </a>
+            <a class="nav-item" data-page="quotations" onclick="navigate('quotations')">
+                <span class="nav-icon">&#128203;</span> Quotation Master
+            </a>
+            <a class="nav-item" data-page="amc" onclick="navigate('amc')">
+                <span class="nav-icon">&#128337;</span> AMC
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">&#10148; Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <div class="topbar-title" id="pageTitle">Dashboard</div>
+            <div class="topbar-right">
+                <span id="topbarUser"></span>
+            </div>
+        </header>
+
+        <div class="page-content" id="pageContent">
+            <!-- Content rendered here dynamically -->
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Form</h3>
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/modules/customers.js"></script>
+<script src="js/modules/services.js"></script>
+<script src="js/modules/products.js"></script>
+<script src="js/modules/categories.js"></script>
+<script src="js/modules/salary.js"></script>
+<script src="js/modules/quotation.js"></script>
+<script src="js/modules/amc.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
