@@ -1,6 +1,5 @@
 package com.medicalerp.controller;
 
-import com.medicalerp.config.JwtUtil;
 import com.medicalerp.model.User;
 import com.medicalerp.repository.UserRepository;
 import com.medicalerp.service.AuthService;
@@ -15,7 +14,6 @@ import java.util.*;
 public class AuthController {
 
     @Autowired private UserRepository userRepo;
-    @Autowired private JwtUtil jwtUtil;
     @Autowired private PasswordEncoder passwordEncoder;
 
     // 1. Declare the AuthService variable
