@@ -1,4 +1,4 @@
-async function renderCustomers() {
+export async function renderCustomers() {
     const el = document.getElementById('pageContent');
     el.innerHTML = `
     <div class="page-header">
@@ -24,7 +24,7 @@ async function renderCustomers() {
     loadCustomers();
 }
 
-async function loadCustomers() {
+export async function loadCustomers() {
     const search = document.getElementById('custSearch')?.value || '';
     const status = document.getElementById('custStatus')?.value || '';
     let ep = '/customers?';
@@ -52,13 +52,13 @@ async function loadCustomers() {
     } catch (e) { document.getElementById('customerTableBody').innerHTML = `<tr><td colspan="9" class="table-empty">${e.message}</td></tr>`; }
 }
 
-function resetCustomerFilters() {
+export function resetCustomerFilters() {
     document.getElementById('custSearch').value = '';
     document.getElementById('custStatus').value = '';
     loadCustomers();
 }
 
-function openCustomerForm(c = null) {
+export function openCustomerForm(c = null) {
     const isEdit = !!c;
     openModal(isEdit ? 'Edit Customer' : 'Add Customer', `
     <div class="form-row">
@@ -87,7 +87,7 @@ function openCustomerForm(c = null) {
     </div>`);
 }
 
-async function saveCustomer(id) {
+export async function saveCustomer(id) {
     const payload = {
         name: document.getElementById('cf_name').value,
         contactPerson: document.getElementById('cf_contact').value,
@@ -108,7 +108,7 @@ async function saveCustomer(id) {
     } catch (e) { alert('Error: ' + e.message); }
 }
 
-async function deleteCustomer(id) {
+export async function deleteCustomer(id) {
     if (!confirm('Delete this customer?')) return;
     try { await api.delete(`/customers/${id}`); loadCustomers(); }
     catch (e) { alert('Error: ' + e.message); }

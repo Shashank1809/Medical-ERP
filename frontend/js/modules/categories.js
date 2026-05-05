@@ -1,4 +1,4 @@
-async function renderCategories() {
+export async function renderCategories() {
     const el = document.getElementById('pageContent');
     el.innerHTML = `
     <div class="page-header">
@@ -13,7 +13,7 @@ async function renderCategories() {
     loadCategories();
 }
 
-async function loadCategories() {
+export async function loadCategories() {
     try {
         const data = await api.get('/product-categories');
         const tbody = document.getElementById('catTableBody');
@@ -29,7 +29,7 @@ async function loadCategories() {
     } catch(e) { document.getElementById('catTableBody').innerHTML = `<tr><td colspan="4" class="table-empty">${e.message}</td></tr>`; }
 }
 
-function openCategoryForm(c = null) {
+export function openCategoryForm(c = null) {
     openModal(c ? 'Edit Category' : 'Add Category', `
     <div class="form-group"><label>Name *</label><input id="catf_name" value="${c?.name||''}"/></div>
     <div class="form-group"><label>Description</label><textarea id="catf_desc">${c?.description||''}</textarea></div>
@@ -39,7 +39,7 @@ function openCategoryForm(c = null) {
     </div>`);
 }
 
-async function saveCategory(id) {
+export async function saveCategory(id) {
     const name = document.getElementById('catf_name').value;
     if (!name) { alert('Name required'); return; }
     const payload = { name, description: document.getElementById('catf_desc').value };
@@ -50,7 +50,7 @@ async function saveCategory(id) {
     } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function deleteCategory(id) {
+export async function deleteCategory(id) {
     if (!confirm('Delete this category?')) return;
     try { await api.delete(`/product-categories/${id}`); loadCategories(); }
     catch(e) { alert('Error: ' + e.message); }

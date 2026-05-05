@@ -29,7 +29,7 @@
     </div>
 </div>
 <script>
-    if (localStorage.getItem('erp_token')) window.location.href = 'dashboard.html';
+    if (localStorage.getItem('token')) window.location.href = 'dashboard.html';
 
     async function doLogin(e) {
         e.preventDefault();
@@ -48,7 +48,7 @@
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Login failed');
-            localStorage.setItem('erp_token', data.token);
+            localStorage.setItem('token', data.token);
             localStorage.setItem('erp_user', JSON.stringify({username: data.username, fullName: data.fullName, role: data.role}));
             window.location.href = 'dashboard.html';
         } catch(ex) {

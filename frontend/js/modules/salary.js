@@ -1,4 +1,4 @@
-async function renderSalary() {
+export async function renderSalary() {
     const el = document.getElementById('pageContent');
     el.innerHTML = `
     <div class="page-header">
@@ -27,7 +27,7 @@ async function renderSalary() {
     loadSalary();
 }
 
-async function loadSalary() {
+export async function loadSalary() {
     const search = document.getElementById('salSearch')?.value || '';
     const month = document.getElementById('salMonth')?.value || '';
     const year = document.getElementById('salYear')?.value || '';
@@ -59,12 +59,12 @@ async function loadSalary() {
     } catch(e) { document.getElementById('salTableBody').innerHTML = `<tr><td colspan="12" class="table-empty">${e.message}</td></tr>`; }
 }
 
-function resetSalaryFilters() {
+export function resetSalaryFilters() {
     ['salSearch','salMonth','salYear'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     loadSalary();
 }
 
-function openSalaryForm(s = null) {
+export function openSalaryForm(s = null) {
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     openModal(s ? 'Edit Salary Record' : 'Add Salary Record', `
     <div class="form-row">
@@ -119,7 +119,7 @@ function calcNet() {
     if (net) net.value = (basic + hra + allow - deduct).toFixed(2);
 }
 
-async function saveSalary(id) {
+export async function saveSalary(id) {
     const payload = {
         employeeName: document.getElementById('salf_name').value,
         employeeCode: document.getElementById('salf_code').value,
@@ -144,7 +144,7 @@ async function saveSalary(id) {
     } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function deleteSalary(id) {
+export async function deleteSalary(id) {
     if (!confirm('Delete this salary record?')) return;
     try { await api.delete(`/salary/${id}`); loadSalary(); }
     catch(e) { alert('Error: ' + e.message); }

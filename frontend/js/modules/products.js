@@ -1,4 +1,4 @@
-async function renderProducts() {
+export async function renderProducts() {
     const el = document.getElementById('pageContent');
     const cats = await api.get('/product-categories');
     el.innerHTML = `
@@ -30,7 +30,7 @@ async function renderProducts() {
     loadProducts();
 }
 
-async function loadProducts() {
+export async function loadProducts() {
     const search = document.getElementById('prodSearch')?.value || '';
     const cat = document.getElementById('prodCat')?.value || '';
     const status = document.getElementById('prodStatus')?.value || '';
@@ -62,12 +62,12 @@ async function loadProducts() {
     } catch(e) { document.getElementById('prodTableBody').innerHTML = `<tr><td colspan="11" class="table-empty">${e.message}</td></tr>`; }
 }
 
-function resetProductFilters() {
+export function resetProductFilters() {
     ['prodSearch','prodCat','prodStatus'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     loadProducts();
 }
 
-async function openProductForm(p = null) {
+export async function openProductForm(p = null) {
     const cats = window._prodCats || await api.get('/product-categories');
     openModal(p ? 'Edit Product' : 'Add Product', `
     <div class="form-row">
@@ -104,7 +104,7 @@ async function openProductForm(p = null) {
     </div>`);
 }
 
-async function saveProduct(id) {
+export async function saveProduct(id) {
     const catId = document.getElementById('pf_cat').value;
     const payload = {
         name: document.getElementById('pf_name').value,
@@ -127,7 +127,7 @@ async function saveProduct(id) {
     } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function deleteProduct(id) {
+export async function deleteProduct(id) {
     if (!confirm('Delete this product?')) return;
     try { await api.delete(`/products/${id}`); loadProducts(); }
     catch(e) { alert('Error: ' + e.message); }

@@ -1,4 +1,4 @@
-async function renderServices() {
+export async function renderServices() {
     const el = document.getElementById('pageContent');
     el.innerHTML = `
     <div class="page-header">
@@ -23,7 +23,7 @@ async function renderServices() {
     loadServices();
 }
 
-async function loadServices() {
+export async function loadServices() {
     const status = document.getElementById('svcStatus')?.value || '';
     let ep = '/customer-services?' + (status ? `status=${status}` : '');
     try {
@@ -47,7 +47,7 @@ async function loadServices() {
     } catch (e) { document.getElementById('serviceTableBody').innerHTML = `<tr><td colspan="8" class="table-empty">${e.message}</td></tr>`; }
 }
 
-async function openServiceForm(s = null) {
+export async function openServiceForm(s = null) {
     const customers = await api.get('/customers');
     const isEdit = !!s;
     openModal(isEdit ? 'Edit Service' : 'Add Service Call', `
@@ -80,7 +80,7 @@ async function openServiceForm(s = null) {
     </div>`);
 }
 
-async function saveService(id) {
+export async function saveService(id) {
     const custId = document.getElementById('sf_cust').value;
     if (!custId) { alert('Please select a customer'); return; }
     const payload = {
@@ -100,7 +100,7 @@ async function saveService(id) {
     } catch (e) { alert('Error: ' + e.message); }
 }
 
-async function deleteService(id) {
+export async function deleteService(id) {
     if (!confirm('Delete this service record?')) return;
     try { await api.delete(`/customer-services/${id}`); loadServices(); }
     catch (e) { alert('Error: ' + e.message); }

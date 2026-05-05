@@ -1,5 +1,5 @@
-async function renderAMC() {
-    const el = document.getElementById('pageContent');
+export async function renderAMC() {
+    const el = document.getElementById('pageContent') || document.getElementById('main-content');
     el.innerHTML = `
     <div class="page-header">
       <h2>AMC Records</h2>
@@ -21,10 +21,34 @@ async function renderAMC() {
       <tbody id="amcTableBody"><tr><td colspan="11" class="table-empty">Loading...</td></tr></tbody>
       </table>
     </div></div>`;
-    loadAMC();
+    loadAMC()
+
+    // const el = document.getElementById('pageContent');
+    // el.innerHTML = `
+    // <div class="page-header">
+    //   <h2>AMC Records</h2>
+    //   <button class="btn-add" onclick="openAMCForm()">&#43; New AMC</button>
+    // </div>
+    // <div class="filter-bar">
+    //   <div class="filter-group"><label>Status</label>
+    //     <select id="amcStatus"><option value="">All</option><option>ACTIVE</option><option>EXPIRED</option><option>CANCELLED</option></select>
+    //   </div>
+    //   <button class="btn-filter" onclick="loadAMC()">Filter</button>
+    //   <button class="btn-reset" onclick="document.getElementById('amcStatus').value='';loadAMC()">Reset</button>
+    // </div>
+    // <div class="table-card"><div class="table-scroll">
+    //   <table><thead><tr>
+    //     <th>#</th><th>AMC No</th><th>Customer</th><th>Product</th>
+    //     <th>Start Date</th><th>End Date</th><th>Amount</th>
+    //     <th>Visits</th><th>Technician</th><th>Status</th><th>Actions</th>
+    //   </tr></thead>
+    //   <tbody id="amcTableBody"><tr><td colspan="11" class="table-empty">Loading...</td></tr></tbody>
+    //   </table>
+    // </div></div>`;
+    // loadAMC();
 }
 
-async function loadAMC() {
+export async function loadAMC() {
     const status = document.getElementById('amcStatus')?.value || '';
     let ep = '/amc?' + (status ? `status=${status}` : '');
     try {
@@ -51,7 +75,7 @@ async function loadAMC() {
     } catch(e) { document.getElementById('amcTableBody').innerHTML = `<tr><td colspan="11" class="table-empty">${e.message}</td></tr>`; }
 }
 
-async function openAMCForm(a = null) {
+export async function openAMCForm(a = null) {
     const [customers, products] = await Promise.all([api.get('/customers'), api.get('/products')]);
     openModal(a ? 'Edit AMC Record' : 'New AMC Contract', `
     <div class="form-row">
@@ -95,7 +119,7 @@ async function openAMCForm(a = null) {
     </div>`);
 }
 
-async function saveAMC(id) {
+export async function saveAMC(id) {
     const custId = document.getElementById('af_cust').value;
     const prodId = document.getElementById('af_prod').value;
     if (!custId) { alert('Select a customer'); return; }
@@ -119,8 +143,14 @@ async function saveAMC(id) {
     } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function deleteAMC(id) {
+export async function deleteAMC(id) {
     if (!confirm('Delete this AMC record?')) return;
     try { await api.delete(`/amc/${id}`); loadAMC(); }
     catch(e) { alert('Error: ' + e.message); }
 }
+
+// ATTACH TO WINDOW TO FIX REFERENCE ERRORS
+window.loadAMC = loadAMC;
+window.openAMCForm = openAMCForm;
+window.saveAMC = saveAMC;
+window.deleteAMC = deleteAMC

@@ -1,4 +1,4 @@
-async function renderQuotations() {
+export async function renderQuotation() {
     const el = document.getElementById('pageContent');
     el.innerHTML = `
     <div class="page-header">
@@ -23,7 +23,7 @@ async function renderQuotations() {
     loadQuotations();
 }
 
-async function loadQuotations() {
+export async function loadQuotations() {
     const status = document.getElementById('qtStatus')?.value || '';
     let ep = '/quotations?' + (status ? `status=${status}` : '');
     try {
@@ -47,7 +47,7 @@ async function loadQuotations() {
     } catch(e) { document.getElementById('qtTableBody').innerHTML = `<tr><td colspan="8" class="table-empty">${e.message}</td></tr>`; }
 }
 
-async function openQuotationForm(q = null) {
+export async function openQuotationForm(q = null) {
     const customers = await api.get('/customers');
     const isEdit = !!q;
     openModal(isEdit ? 'Edit Quotation' : 'New Quotation', `
@@ -89,7 +89,7 @@ function calcQuotation() {
     if (grand) grand.value = (total - disc + gst).toFixed(2);
 }
 
-async function saveQuotation(id) {
+export async function saveQuotation(id) {
     const custId = document.getElementById('qf_cust').value;
     if (!custId) { alert('Select a customer'); return; }
     const payload = {
@@ -111,7 +111,7 @@ async function saveQuotation(id) {
     } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function deleteQuotation(id) {
+export async function deleteQuotation(id) {
     if (!confirm('Delete this quotation?')) return;
     try { await api.delete(`/quotations/${id}`); loadQuotations(); }
     catch(e) { alert('Error: ' + e.message); }

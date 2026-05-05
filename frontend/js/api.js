@@ -1,6 +1,6 @@
 const API_BASE = 'http://localhost:8080/api';
 
-function getToken() { return localStorage.getItem('erp_token'); }
+function getToken() { return localStorage.getItem('token'); }
 
 async function apiCall(endpoint, method = 'GET', body = null) {
     const opts = {
@@ -12,7 +12,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     };
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(API_BASE + endpoint, opts);
-    if (res.status === 401) { logout(); return; }
+    if (res.status === 401) { window.logout?.(); return; }
     if (!res.ok) throw new Error(await res.text());
     if (res.status === 200 && method !== 'DELETE') return res.json();
     return null;
@@ -24,3 +24,5 @@ const api = {
     put: (ep, data) => apiCall(ep, 'PUT', data),
     delete: (ep) => apiCall(ep, 'DELETE')
 };
+
+window.api = api;
