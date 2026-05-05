@@ -58,7 +58,7 @@ function checkAuth() {
     const token = localStorage.getItem('token');
     const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('index') || window.location.pathname.endsWith('/');
 
-    console.log("Checking Auth - Path:", path, "| Token Exists:", !!token);
+    console.log("Checking Auth - Path:", window.location.pathname, "| Token Exists:", !!token);
 
     if (!token && !isLoginPage) {
         console.log("Redirecting to Login...");
@@ -74,6 +74,74 @@ function checkAuth() {
 
     return true;
 }
+
+// Define Global Navigation IMMEDIATELY (before HTML onclick handlers fire)
+window.navigate = function (page) {
+    // Update Sidebar Active State
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const activeLink = document.querySelector(`[data-page="${page}"]`);
+    if (activeLink) activeLink.classList.add('active');
+
+    // Update Page Titles
+    const titles = {
+        dashboard: 'Dashboard',
+        customers: 'Customer Master',
+        services: 'Customer Services',
+        products: 'Product Stock',
+        salary: 'Salary & Wages',
+        categories: 'Product Category',
+        quotations: 'Quotation Master',
+        amc: 'AMC Records'
+    };
+
+    const titleEl = document.getElementById('pageTitle') || document.getElementById('page-title');
+    if (titleEl) titleEl.textContent = titles[page] || page;
+
+    // Set Loading State
+    const contentArea = document.getElementById('pageContent') || document.getElementById('main-content');
+    if (contentArea) {
+        contentArea.innerHTML = '<div style="padding:2rem;text-align:center;color:#aaa">Loading...</div>';
+    }
+
+    // Routing Logic
+    const pages = {
+        dashboard: renderDashboard,
+        customers: renderCustomers,
+        services: renderServices,
+        products: renderProducts,
+        salary: renderSalary,
+        categories: renderCategories,
+        quotations: renderQuotation,
+        amc: renderAMC
+    };
+
+    if (pages[page]) {
+        pages[page]();
+    }
+};
+
+// Define Global UI Helpers
+window.toggleSidebar = () => document.getElementById('sidebar')?.classList.toggle('open');
+
+window.logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('erp_user');
+    window.location.replace('index.html');
+};
+
+window.openModal = (title, bodyHTML) => {
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = bodyHTML;
+        overlay.classList.add('open');
+    }
+};
+
+window.closeModal = (e) => {
+    const overlay = document.getElementById('modalOverlay');
+    if (!e || e.target === overlay) overlay?.classList.remove('open');
+};
 
 // 2. Expose module functions globally for onclick handlers
 (async function init() {
@@ -91,80 +159,15 @@ function checkAuth() {
             if (document.getElementById('adminAvatar')) {
                 document.getElementById('adminAvatar').textContent = (user.fullName || 'A')[0].toUpperCase();
             }
+            if (document.getElementById('topbarUser')) {
+                document.getElementById('topbarUser').textContent = user.fullName || user.username || '';
+            }
         } catch (e) {
             console.error("Error parsing user data", e);
         }
     }
 
-    // 3. Define Global Navigation
-    window.navigate = function (page) {
-        // Update Sidebar Active State
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        const activeLink = document.querySelector(`[data-page="${page}"]`);
-        if (activeLink) activeLink.classList.add('active');
-
-        // Update Page Titles
-        const titles = {
-            dashboard: 'Dashboard',
-            customers: 'Customer Master',
-            services: 'Customer Services',
-            products: 'Product Stock',
-            salary: 'Salary & Wages',
-            categories: 'Product Category',
-            quotations: 'Quotation Master',
-            amc: 'AMC Records'
-        };
-
-        const titleEl = document.getElementById('pageTitle') || document.getElementById('page-title');
-        if (titleEl) titleEl.textContent = titles[page] || page;
-
-        // Set Loading State
-        const contentArea = document.getElementById('pageContent') || document.getElementById('main-content');
-        if (contentArea) {
-            contentArea.innerHTML = '<div style="padding:2rem;text-align:center;color:#aaa">Loading...</div>';
-        }
-
-        // Routing Logic
-        const pages = {
-            dashboard: renderDashboard,
-            customers: renderCustomers,
-            services: renderServices,
-            products: renderProducts,
-            salary: renderSalary,
-            categories: renderCategories,
-            quotations: renderQuotation,
-            amc: renderAMC
-        };
-
-        if (pages[page]) {
-            pages[page]();
-        }
-    };
-
-    // 4. Global UI Helpers
-    window.toggleSidebar = () => document.getElementById('sidebar')?.classList.toggle('open');
-
-    window.logout = () => {
-        localStorage.removeItem('token'); // Only remove auth keys
-        localStorage.removeItem('erp_user');
-        window.location.replace('index.html');
-    };
-
-    window.openModal = (title, bodyHTML) => {
-        const overlay = document.getElementById('modalOverlay');
-        if (overlay) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalBody').innerHTML = bodyHTML;
-            overlay.classList.add('open');
-        }
-    };
-
-    window.closeModal = (e) => {
-        const overlay = document.getElementById('modalOverlay');
-        if (!e || e.target === overlay) overlay?.classList.remove('open');
-    };
-
-    // 5. Run initial navigation ONLY if on dashboard
+    // Run initial navigation ONLY if on dashboard
     if (window.location.pathname.includes('dashboard.html')) {
         window.navigate('dashboard');
     }
@@ -176,24 +179,120 @@ async function renderDashboard() {
     if (!el) return;
 
     try {
-        const [customers, products, services, amc] = await Promise.all([
-            api.get('/customers'), api.get('/products'),
-            api.get('/customer-services'), api.get('/amc')
+        const [customers, products, services, amc, categories, quotations, salaryRecords] = await Promise.all([
+            api.get('/customers'), api.get('/products'), api.get('/customer-services'), api.get('/amc'),
+            api.get('/product-categories'), api.get('/quotations'), api.get('/salary')
         ]);
 
-        const lowStock = (products || []).filter(p => p.stockQuantity <= p.minStock).length;
+        const lowStockProducts = (products || []).filter(p => p.stockQuantity <= p.minStock);
+        const lowStockCount = lowStockProducts.length;
         const activeAMC = (amc || []).filter(a => a.status === 'ACTIVE').length;
-        const pendingSvc = (services || []).filter(s => s.status === 'PENDING').length;
+        const expiringAMC = (amc || []).filter(a => a.status === 'ACTIVE').sort((a, b) => (a.endDate || '').localeCompare(b.endDate || '')).slice(0, 5);
+        const pendingServices = (services || []).filter(s => s.status === 'PENDING');
+        const latestCustomers = (customers || []).slice(-5).reverse();
+        const latestServices = (services || []).slice(-5).reverse();
+        const latestQuotations = (quotations || []).slice(-5).reverse();
 
         el.innerHTML = `
-            <div class="row">
-                <div class="col-md-3"><div class="card bg-primary text-white p-3">Customers: ${(customers || []).length}</div></div>
-                <div class="col-md-3"><div class="card bg-danger text-white p-3">Low Stock: ${lowStock}</div></div>
-                <div class="col-md-3"><div class="card bg-warning text-dark p-3">Pending Service: ${pendingSvc}</div></div>
-                <div class="col-md-3"><div class="card bg-success text-white p-3">Active AMCs: ${activeAMC}</div></div>
-            </div>`;
+        <div class="page-header dashboard-header">
+            <div>
+                <h2>Dashboard</h2>
+                <p class="dashboard-subtitle">Overview of customers, products, services, AMC, quotations and payroll so you can act faster.</p>
+            </div>
+            <div class="dashboard-actions">
+                <button class="btn-add" onclick="navigate('customers')">Manage Records</button>
+            </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">&#128100;</div>
+            <div class="stat-label">Customers</div>
+            <div class="stat-value">${(customers || []).length}</div>
+            <div class="stat-sub">Total active and inactive customers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128230;</div>
+            <div class="stat-label">Products</div>
+            <div class="stat-value">${(products || []).length}</div>
+            <div class="stat-sub">Inventory items in stock</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128203;</div>
+            <div class="stat-label">Categories</div>
+            <div class="stat-value">${(categories || []).length}</div>
+            <div class="stat-sub">Product categories available</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128179;</div>
+            <div class="stat-label">Salary Records</div>
+            <div class="stat-value">${(salaryRecords || []).length}</div>
+            <div class="stat-sub">Payroll entries recorded</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128295;</div>
+            <div class="stat-label">Service Calls</div>
+            <div class="stat-value">${(services || []).length}</div>
+            <div class="stat-sub">${pendingServices.length} pending service requests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128337;</div>
+            <div class="stat-label">AMC Contracts</div>
+            <div class="stat-value">${(amc || []).length}</div>
+            <div class="stat-sub">${activeAMC} active AMC agreements</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#9888;</div>
+            <div class="stat-label">Low Stock Alerts</div>
+            <div class="stat-value">${lowStockCount}</div>
+            <div class="stat-sub">Products at or below minimum stock</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128221;</div>
+            <div class="stat-label">Quotations</div>
+            <div class="stat-value">${(quotations || []).length}</div>
+            <div class="stat-sub">Recent quotes generated</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="widget-card">
+            <div class="widget-title">Recent Customers</div>
+            ${(latestCustomers.length ? latestCustomers.map(c => `
+              <div class="recent-item">
+                <span class="recent-name">${c.name}</span>
+                <span class="recent-date">${c.city || '—'}</span>
+              </div>`).join('') : '<div class="table-empty">No customer records yet</div>')}
+          </div>
+
+          <div class="widget-card">
+            <div class="widget-title">Low Stock Products</div>
+            ${(lowStockProducts.length ? lowStockProducts.slice(0, 5).map(p => `
+              <div class="recent-item">
+                <span class="recent-name">${p.name}</span>
+                <span class="badge badge-danger">${p.stockQuantity || 0} left</span>
+              </div>`).join('') : '<div class="table-empty">All inventory levels are healthy</div>')}
+          </div>
+
+          <div class="widget-card">
+            <div class="widget-title">Upcoming AMC Expirations</div>
+            ${(expiringAMC.length ? expiringAMC.map(a => `
+              <div class="recent-item">
+                <span class="recent-name">${a.customer?.name || 'Unknown'}</span>
+                <span class="recent-date">${a.endDate || '—'}</span>
+              </div>`).join('') : '<div class="table-empty">No active AMC expirations soon</div>')}
+          </div>
+
+          <div class="widget-card">
+            <div class="widget-title">Latest Quotations</div>
+            ${(latestQuotations.length ? latestQuotations.map(q => `
+              <div class="recent-item">
+                <span class="recent-name">${q.customer?.name || 'Unknown'}</span>
+                <span class="badge badge-${q.status === 'APPROVED' ? 'success' : q.status === 'DRAFT' ? 'secondary' : q.status === 'REJECTED' ? 'danger' : 'info'}">${q.status}</span>
+              </div>`).join('') : '<div class="table-empty">No quotation activity yet</div>')}
+          </div>
+        </div>`;
     } catch (err) {
-        el.innerHTML = `<div class="alert alert-danger">Dashboard Error: ${err.message}</div>`;
+        el.innerHTML = `<div class="error-msg">Failed to load dashboard: ${err.message}</div>`;
     }
 }
 
